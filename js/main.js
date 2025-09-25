@@ -197,6 +197,9 @@ function generateAndDownload() {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+        
+        // 显示下载成功提示
+        showSingleDownloadComplete(iconConfig.name, currentSize);
     }, 'image/png');
 }
 
@@ -331,6 +334,37 @@ function showDownloadComplete() {
         animation: slideInRight 0.3s ease;
     `;
     completeDiv.innerHTML = '🎉 iOS图标ZIP文件下载完成！';
+    document.body.appendChild(completeDiv);
+    
+    // 3秒后自动隐藏
+    setTimeout(() => {
+        completeDiv.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => completeDiv.remove(), 300);
+    }, 3000);
+}
+
+/**
+ * 显示单个图标下载成功提示
+ * @param {string} iconName - 图标名称
+ * @param {number} size - 图标尺寸
+ */
+function showSingleDownloadComplete(iconName, size) {
+    const completeDiv = document.createElement('div');
+    completeDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(45deg, #28a745, #20c997);
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 10000;
+        font-size: 14px;
+        font-weight: 500;
+        animation: slideInRight 0.3s ease;
+    `;
+    completeDiv.innerHTML = `🎉 ${iconName}图标 (${size}×${size}) 下载完成！`;
     document.body.appendChild(completeDiv);
     
     // 3秒后自动隐藏
