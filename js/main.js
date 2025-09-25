@@ -574,64 +574,17 @@ async function generateAIIcon() {
 }
 
 /**
- * 调用免费AI图像生成API
+ * 本地智能图标生成（无需API）
  * @param {string} prompt - 提示词
  * @returns {Promise<ImageData>} 图像数据
  */
 async function callHuggingFaceAPI(prompt) {
-    // 使用免费的Replicate API (无需token，但有使用限制)
-    const API_URL = 'https://api.replicate.com/v1/predictions';
-    
-    // 优化提示词，专门用于图标生成
-    const optimizedPrompt = `${prompt}, app icon, simple, clean, white background, high quality, 512x512`;
-    
-    try {
-        // 首先尝试使用免费的Stable Diffusion模型
-        const response = await fetch('https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2-1', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                inputs: optimizedPrompt,
-                parameters: {
-                    num_inference_steps: 20,
-                    guidance_scale: 7.5,
-                    width: 512,
-                    height: 512
-                }
-            })
-        });
-        
-        if (response.ok) {
-            const blob = await response.blob();
-            return await createImageFromBlob(blob);
-        }
-        
-        // 如果Hugging Face失败，使用备用的免费服务
-        throw new Error('Hugging Face API暂时不可用');
-        
-    } catch (error) {
-        // 使用备用的免费AI图像生成服务
-        return await callBackupAIService(prompt);
-    }
-}
-
-/**
- * 备用AI图像生成服务
- * @param {string} prompt - 提示词
- * @returns {Promise<ImageData>} 图像数据
- */
-async function callBackupAIService(prompt) {
-    // 使用免费的AI图像生成服务
-    const API_URL = 'https://api.unsplash.com/photos/random';
-    
-    // 由于免费API限制，我们生成一个基于提示词的简单图标
+    // 直接使用本地智能生成，无需任何外部API
     return await generateSimpleIconFromPrompt(prompt);
 }
 
 /**
- * 根据提示词生成简单图标
+ * 根据提示词生成智能图标
  * @param {string} prompt - 提示词
  * @returns {Promise<ImageData>} 图像数据
  */
@@ -641,7 +594,7 @@ async function generateSimpleIconFromPrompt(prompt) {
     canvas.width = 512;
     canvas.height = 512;
     
-    // 根据提示词生成简单的图标
+    // 颜色配置
     const colors = {
         'blue': '#2196F3',
         'red': '#F44336',
@@ -650,15 +603,94 @@ async function generateSimpleIconFromPrompt(prompt) {
         'purple': '#9C27B0',
         'orange': '#FF9800',
         'pink': '#E91E63',
+        'teal': '#009688',
+        'indigo': '#3F51B5',
+        'cyan': '#00BCD4',
+        'lime': '#CDDC39',
+        'amber': '#FFC107',
+        'deep-orange': '#FF5722',
+        'brown': '#795548',
+        'grey': '#607D8B',
         'default': '#667eea'
     };
     
-    // 提取颜色关键词
-    let color = colors.default;
+    // 图标配置
+    const iconConfigs = {
+        'calculator': { emoji: '🧮', shape: 'rounded' },
+        'music': { emoji: '🎵', shape: 'circle' },
+        'heart': { emoji: '❤️', shape: 'heart' },
+        'star': { emoji: '⭐', shape: 'star' },
+        'gear': { emoji: '⚙️', shape: 'circle' },
+        'home': { emoji: '🏠', shape: 'rounded' },
+        'mail': { emoji: '📧', shape: 'rounded' },
+        'phone': { emoji: '📱', shape: 'rounded' },
+        'camera': { emoji: '📷', shape: 'circle' },
+        'book': { emoji: '📚', shape: 'rounded' },
+        'game': { emoji: '🎮', shape: 'rounded' },
+        'shopping': { emoji: '🛒', shape: 'circle' },
+        'car': { emoji: '🚗', shape: 'rounded' },
+        'plane': { emoji: '✈️', shape: 'rounded' },
+        'food': { emoji: '🍔', shape: 'circle' },
+        'drink': { emoji: '☕', shape: 'circle' },
+        'weather': { emoji: '☀️', shape: 'circle' },
+        'chat': { emoji: '💬', shape: 'rounded' },
+        'lock': { emoji: '🔒', shape: 'rounded' },
+        'key': { emoji: '🔑', shape: 'rounded' },
+        'search': { emoji: '🔍', shape: 'circle' },
+        'settings': { emoji: '⚙️', shape: 'circle' },
+        'user': { emoji: '👤', shape: 'circle' },
+        'notification': { emoji: '🔔', shape: 'circle' },
+        'download': { emoji: '⬇️', shape: 'rounded' },
+        'upload': { emoji: '⬆️', shape: 'rounded' },
+        'edit': { emoji: '✏️', shape: 'circle' },
+        'delete': { emoji: '🗑️', shape: 'rounded' },
+        'add': { emoji: '➕', shape: 'circle' },
+        'remove': { emoji: '➖', shape: 'circle' },
+        'play': { emoji: '▶️', shape: 'circle' },
+        'pause': { emoji: '⏸️', shape: 'circle' },
+        'stop': { emoji: '⏹️', shape: 'circle' },
+        'next': { emoji: '⏭️', shape: 'circle' },
+        'previous': { emoji: '⏮️', shape: 'circle' },
+        'volume': { emoji: '🔊', shape: 'circle' },
+        'mute': { emoji: '🔇', shape: 'circle' },
+        'wifi': { emoji: '📶', shape: 'rounded' },
+        'battery': { emoji: '🔋', shape: 'rounded' },
+        'clock': { emoji: '🕐', shape: 'circle' },
+        'calendar': { emoji: '📅', shape: 'rounded' },
+        'location': { emoji: '📍', shape: 'circle' },
+        'map': { emoji: '🗺️', shape: 'rounded' },
+        'compass': { emoji: '🧭', shape: 'circle' },
+        'flag': { emoji: '🏁', shape: 'rounded' },
+        'trophy': { emoji: '🏆', shape: 'rounded' },
+        'medal': { emoji: '🏅', shape: 'circle' },
+        'gift': { emoji: '🎁', shape: 'rounded' },
+        'balloon': { emoji: '🎈', shape: 'circle' },
+        'party': { emoji: '🎉', shape: 'circle' },
+        'fire': { emoji: '🔥', shape: 'circle' },
+        'lightning': { emoji: '⚡', shape: 'rounded' },
+        'snow': { emoji: '❄️', shape: 'circle' },
+        'rain': { emoji: '🌧️', shape: 'circle' },
+        'sun': { emoji: '☀️', shape: 'circle' },
+        'moon': { emoji: '🌙', shape: 'circle' },
+        'cloud': { emoji: '☁️', shape: 'rounded' }
+    };
+    
     const promptLower = prompt.toLowerCase();
+    
+    // 提取颜色
+    let color = colors.default;
     for (const [key, value] of Object.entries(colors)) {
         if (promptLower.includes(key)) {
             color = value;
+            break;
+        }
+    }
+    
+    // 提取图标
+    let iconConfig = { emoji: '🎨', shape: 'circle' };
+    for (const [key, config] of Object.entries(iconConfigs)) {
+        if (promptLower.includes(key)) {
+            iconConfig = config;
             break;
         }
     }
@@ -667,54 +699,102 @@ async function generateSimpleIconFromPrompt(prompt) {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, 512, 512);
     
-    // 绘制圆形背景
+    // 绘制背景形状
     ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.arc(256, 256, 200, 0, 2 * Math.PI);
-    ctx.fill();
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+    ctx.shadowBlur = 20;
+    ctx.shadowOffsetY = 4;
     
-    // 根据提示词绘制简单图标
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 200px Arial';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    
-    let iconText = '?';
-    if (promptLower.includes('calculator') || promptLower.includes('计算器')) {
-        iconText = '🧮';
-    } else if (promptLower.includes('music') || promptLower.includes('音乐')) {
-        iconText = '🎵';
-    } else if (promptLower.includes('heart') || promptLower.includes('爱心')) {
-        iconText = '❤️';
-    } else if (promptLower.includes('star') || promptLower.includes('星星')) {
-        iconText = '⭐';
-    } else if (promptLower.includes('gear') || promptLower.includes('齿轮')) {
-        iconText = '⚙️';
-    } else if (promptLower.includes('home') || promptLower.includes('家')) {
-        iconText = '🏠';
-    } else if (promptLower.includes('mail') || promptLower.includes('邮件')) {
-        iconText = '📧';
-    } else if (promptLower.includes('phone') || promptLower.includes('电话')) {
-        iconText = '📱';
-    } else if (promptLower.includes('camera') || promptLower.includes('相机')) {
-        iconText = '📷';
-    } else if (promptLower.includes('book') || promptLower.includes('书')) {
-        iconText = '📚';
-    } else {
-        iconText = '🎨';
+    if (iconConfig.shape === 'circle') {
+        ctx.beginPath();
+        ctx.arc(256, 256, 180, 0, 2 * Math.PI);
+        ctx.fill();
+    } else if (iconConfig.shape === 'rounded') {
+        ctx.fillRoundRect(76, 76, 360, 360, 40);
+    } else if (iconConfig.shape === 'heart') {
+        drawHeart(ctx, 256, 256, 120);
+    } else if (iconConfig.shape === 'star') {
+        drawStar(ctx, 256, 256, 120);
     }
     
-    // 绘制图标
-    ctx.font = 'bold 120px Arial';
-    ctx.fillText(iconText, 256, 256);
+    // 重置阴影
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetY = 0;
     
-    // 添加一些装饰
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 8;
-    ctx.stroke();
+    // 绘制图标
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 100px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(iconConfig.emoji, 256, 256);
+    
+    // 添加高光效果
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+    if (iconConfig.shape === 'circle') {
+        ctx.beginPath();
+        ctx.arc(200, 200, 60, 0, 2 * Math.PI);
+        ctx.fill();
+    }
     
     return ctx.getImageData(0, 0, 512, 512);
 }
+
+/**
+ * 绘制心形
+ */
+function drawHeart(ctx, x, y, size) {
+    ctx.beginPath();
+    ctx.moveTo(x, y + size * 0.3);
+    ctx.bezierCurveTo(x, y, x - size * 0.5, y, x - size * 0.5, y + size * 0.3);
+    ctx.bezierCurveTo(x - size * 0.5, y + size * 0.7, x, y + size * 1.2, x, y + size * 1.2);
+    ctx.bezierCurveTo(x, y + size * 1.2, x + size * 0.5, y + size * 0.7, x + size * 0.5, y + size * 0.3);
+    ctx.bezierCurveTo(x + size * 0.5, y, x, y, x, y + size * 0.3);
+    ctx.fill();
+}
+
+/**
+ * 绘制星形
+ */
+function drawStar(ctx, x, y, size) {
+    const spikes = 5;
+    const outerRadius = size;
+    const innerRadius = size * 0.4;
+    
+    ctx.beginPath();
+    for (let i = 0; i < spikes * 2; i++) {
+        const radius = i % 2 === 0 ? outerRadius : innerRadius;
+        const angle = (i * Math.PI) / spikes;
+        const px = x + Math.cos(angle) * radius;
+        const py = y + Math.sin(angle) * radius;
+        
+        if (i === 0) {
+            ctx.moveTo(px, py);
+        } else {
+            ctx.lineTo(px, py);
+        }
+    }
+    ctx.closePath();
+    ctx.fill();
+}
+
+/**
+ * Canvas绘制圆角矩形
+ */
+CanvasRenderingContext2D.prototype.fillRoundRect = function(x, y, width, height, radius) {
+    this.beginPath();
+    this.moveTo(x + radius, y);
+    this.lineTo(x + width - radius, y);
+    this.quadraticCurveTo(x + width, y, x + width, y + radius);
+    this.lineTo(x + width, y + height - radius);
+    this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    this.lineTo(x + radius, y + height);
+    this.quadraticCurveTo(x, y + height, x, y + height - radius);
+    this.lineTo(x, y + radius);
+    this.quadraticCurveTo(x, y, x + radius, y);
+    this.closePath();
+    this.fill();
+};
 
 /**
  * 从Blob创建Image对象
