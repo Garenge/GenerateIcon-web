@@ -31,12 +31,19 @@ const iconTypes = {
         emoji: '📍',
         description: '点击按钮将生成一个1024x1024像素的定位图标并自动下载',
         generator: generateLocationIcon
+    },
+    custom: {
+        name: '自定义AI生成',
+        emoji: '🎨',
+        description: '使用AI生成自定义图标，输入描述即可创建独特的图标',
+        generator: null // AI生成的图标不需要预设生成器
     }
 };
 
 let currentIconType = 'calculator';
 let currentSize = 1024;
 let currentDownloadType = 'custom'; // 'custom' or 'ios'
+let aiGeneratedImage = null; // 存储AI生成的图像数据
 
 // iOS应用图标尺寸配置 - 按照pt尺寸和倍率配置
 const iosIconSizes = [
@@ -89,7 +96,17 @@ function switchIconType(iconType) {
     
     // 生成预览
     const previewCanvas = document.getElementById('previewCanvas');
-    iconConfig.generator(previewCanvas, 256);
+    if (iconType === 'custom' && aiGeneratedImage) {
+        // 显示AI生成的图标
+        drawAIImageOnCanvas(previewCanvas, aiGeneratedImage);
+    } else if (iconConfig.generator) {
+        // 显示预设图标
+        iconConfig.generator(previewCanvas, 256);
+    } else {
+        // 清空画布
+        const ctx = previewCanvas.getContext('2d');
+        ctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+    }
 }
 
 /**
@@ -186,7 +203,17 @@ function generateAndDownload() {
     canvas.height = currentSize;
     
     const iconConfig = iconTypes[currentIconType];
-    iconConfig.generator(canvas, currentSize);
+    
+    if (currentIconType === 'custom' && aiGeneratedImage) {
+        // 下载AI生成的图标
+        drawAIImageOnCanvas(canvas, aiGeneratedImage);
+    } else if (iconConfig.generator) {
+        // 下载预设图标
+        iconConfig.generator(canvas, currentSize);
+    } else {
+        alert('请先生成图标');
+        return;
+    }
     
     canvas.toBlob(function(blob) {
         const url = URL.createObjectURL(blob);
@@ -224,7 +251,15 @@ async function downloadAllIOSIcons() {
             canvas.height = iconSize.px;
             
             // 生成图标
-            iconConfig.generator(canvas, iconSize.px);
+            if (currentIconType === 'custom' && aiGeneratedImage) {
+                // 生成AI图标
+                drawAIImageOnCanvas(canvas, aiGeneratedImage);
+            } else if (iconConfig.generator) {
+                // 生成预设图标
+                iconConfig.generator(canvas, iconSize.px);
+            } else {
+                throw new Error('请先生成图标');
+            }
             
             // 将canvas转换为blob
             const blob = await new Promise(resolve => {
@@ -409,7 +444,11 @@ window.onload = function() {
     document.querySelectorAll('.icon-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const iconType = this.getAttribute('data-icon');
-            switchIconType(iconType);
+            if (iconType === 'custom') {
+                openAIModal();
+            } else {
+                switchIconType(iconType);
+            }
         });
     });
     
@@ -454,9 +493,224 @@ window.onload = function() {
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             closeSizeModal();
+            closeAIModal();
         }
     });
     
     // 生成初始预览
     switchIconType('calculator');
 };
+
+// AI生成相关函数
+
+/**
+ * 打开AI生成弹窗
+ */
+function openAIModal() {
+    const modal = document.getElementById('aiModal');
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+/**
+ * 关闭AI生成弹窗
+ */
+function closeAIModal() {
+    const modal = document.getElementById('aiModal');
+    modal.classList.remove('show');
+    document.body.style.overflow = 'auto';
+}
+
+/**
+ * 设置AI提示词
+ * @param {string} prompt - 提示词
+ */
+function setAIPrompt(prompt) {
+    document.getElementById('aiPrompt').value = prompt;
+}
+
+/**
+ * 生成AI图标
+ */
+async function generateAIIcon() {
+    const prompt = document.getElementById('aiPrompt').value.trim();
+    if (!prompt) {
+        alert('请输入图标描述');
+        return;
+    }
+    
+    const generateBtn = document.getElementById('generateAIBtn');
+    const btnText = generateBtn.querySelector('.btn-text');
+    const btnLoading = generateBtn.querySelector('.btn-loading');
+    
+    // 显示加载状态
+    generateBtn.disabled = true;
+    generateBtn.classList.add('loading');
+    
+    try {
+        // 调用Hugging Face API
+        const imageData = await callHuggingFaceAPI(prompt);
+        
+        // 保存AI生成的图像
+        aiGeneratedImage = imageData;
+        
+        // 切换到自定义图标类型
+        switchIconType('custom');
+        
+        // 关闭弹窗
+        closeAIModal();
+        
+        // 显示成功提示
+        showAIGenerationSuccess();
+        
+    } catch (error) {
+        console.error('AI生成失败:', error);
+        showAIGenerationError(error.message);
+    } finally {
+        // 恢复按钮状态
+        generateBtn.disabled = false;
+        generateBtn.classList.remove('loading');
+    }
+}
+
+/**
+ * 调用Hugging Face API
+ * @param {string} prompt - 提示词
+ * @returns {Promise<ImageData>} 图像数据
+ */
+async function callHuggingFaceAPI(prompt) {
+    // 使用免费的Hugging Face Inference API (无需token)
+    const API_URL = 'https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5';
+    
+    // 优化提示词，专门用于图标生成
+    const optimizedPrompt = `${prompt}, app icon, simple, clean, white background, high quality, 512x512`;
+    
+    const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            inputs: optimizedPrompt,
+            parameters: {
+                num_inference_steps: 20,
+                guidance_scale: 7.5,
+                width: 512,
+                height: 512
+            }
+        })
+    });
+    
+    if (!response.ok) {
+        if (response.status === 503) {
+            throw new Error('服务暂时不可用，请稍后重试');
+        } else if (response.status === 429) {
+            throw new Error('请求过于频繁，请稍后重试');
+        } else {
+            throw new Error(`API调用失败: ${response.status}`);
+        }
+    }
+    
+    const blob = await response.blob();
+    return await createImageFromBlob(blob);
+}
+
+/**
+ * 从Blob创建Image对象
+ * @param {Blob} blob - 图像blob
+ * @returns {Promise<ImageData>} 图像数据
+ */
+function createImageFromBlob(blob) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            resolve(ctx.getImageData(0, 0, canvas.width, canvas.height));
+        };
+        img.onerror = reject;
+        img.src = URL.createObjectURL(blob);
+    });
+}
+
+/**
+ * 在画布上绘制AI生成的图像
+ * @param {HTMLCanvasElement} canvas - 目标画布
+ * @param {ImageData} imageData - 图像数据
+ */
+function drawAIImageOnCanvas(canvas, imageData) {
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // 创建临时画布来缩放图像
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCanvas.width = imageData.width;
+    tempCanvas.height = imageData.height;
+    tempCtx.putImageData(imageData, 0, 0);
+    
+    // 绘制到目标画布
+    ctx.drawImage(tempCanvas, 0, 0, canvas.width, canvas.height);
+}
+
+/**
+ * 显示AI生成成功提示
+ */
+function showAIGenerationSuccess() {
+    const successDiv = document.createElement('div');
+    successDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(45deg, #28a745, #20c997);
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 10000;
+        font-size: 14px;
+        font-weight: 500;
+        animation: slideInRight 0.3s ease;
+    `;
+    successDiv.innerHTML = '🎨 AI图标生成成功！现在可以下载了';
+    document.body.appendChild(successDiv);
+    
+    // 3秒后自动隐藏
+    setTimeout(() => {
+        successDiv.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => successDiv.remove(), 300);
+    }, 3000);
+}
+
+/**
+ * 显示AI生成错误提示
+ * @param {string} message - 错误消息
+ */
+function showAIGenerationError(message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(45deg, #dc3545, #c82333);
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 10000;
+        font-size: 14px;
+        font-weight: 500;
+        animation: slideInRight 0.3s ease;
+    `;
+    errorDiv.innerHTML = `❌ AI生成失败: ${message}`;
+    document.body.appendChild(errorDiv);
+    
+    // 5秒后自动隐藏
+    setTimeout(() => {
+        errorDiv.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => errorDiv.remove(), 300);
+    }, 5000);
+}

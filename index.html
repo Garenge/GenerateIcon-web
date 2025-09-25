@@ -41,6 +41,12 @@
                     <span>定位</span>
                 </button>
             </li>
+            <li class="icon-item">
+                <button class="icon-btn" data-icon="custom">
+                    <span class="icon-emoji">🎨</span>
+                    <span>自定义AI生成</span>
+                </button>
+            </li>
         </ul>
     </div>
     
@@ -187,6 +193,42 @@
             <div class="modal-actions">
                 <button class="cancel-btn" onclick="closeSizeModal()">取消</button>
                 <button class="confirm-btn" id="confirmBtn" onclick="confirmSizeAndDownload()">确认并下载</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI生成提示词弹窗 -->
+    <div class="ai-modal" id="aiModal">
+        <div class="ai-modal-content">
+            <div class="ai-modal-header">
+                <h3>🎨 AI图标生成</h3>
+                <button class="close-btn" onclick="closeAIModal()">&times;</button>
+            </div>
+            <div class="ai-modal-body">
+                <div class="ai-input-section">
+                    <label for="aiPrompt">描述你想要的图标：</label>
+                    <textarea id="aiPrompt" placeholder="例如：calculator icon, minimalist style, blue color, white background" rows="3"></textarea>
+                </div>
+                <div class="ai-examples">
+                    <p class="examples-title">💡 提示词示例：</p>
+                    <div class="example-tags">
+                        <span class="example-tag" onclick="setAIPrompt('calculator icon, minimalist, blue')">计算器图标</span>
+                        <span class="example-tag" onclick="setAIPrompt('music note icon, colorful, modern')">音乐图标</span>
+                        <span class="example-tag" onclick="setAIPrompt('heart icon, red, simple')">爱心图标</span>
+                        <span class="example-tag" onclick="setAIPrompt('star icon, gold, shiny')">星星图标</span>
+                        <span class="example-tag" onclick="setAIPrompt('gear icon, gray, technical')">齿轮图标</span>
+                    </div>
+                </div>
+                <div class="ai-tips">
+                    <p>💡 提示：使用英文描述效果更好，可以包含风格、颜色、背景等关键词</p>
+                </div>
+            </div>
+            <div class="ai-modal-actions">
+                <button class="cancel-btn" onclick="closeAIModal()">取消</button>
+                <button class="generate-ai-btn" onclick="generateAIIcon()" id="generateAIBtn">
+                    <span class="btn-text">🎨 生成图标</span>
+                    <span class="btn-loading" style="display: none;">⏳ 生成中...</span>
+                </button>
             </div>
         </div>
     </div>
