@@ -1,0 +1,16 @@
+{
+  "name": "generate-icon",
+  "version": "1.0.0",
+  "description": "A web application for generating various icons",
+  "main": "index.html",
+  "scripts": {
+    "lint": "eslint js/**/*.js",
+    "lint:fix": "eslint js/**/*.js --fix"
+  },
+  "keywords": ["icon", "generator", "canvas", "javascript"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^8.57.0"
+  }
+}

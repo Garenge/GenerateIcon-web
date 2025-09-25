@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图标生成器</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- 左侧图标列表 -->
+    <div class="sidebar">
+        <h2>🎨 图标类型</h2>
+        <ul class="icon-list">
+            <li class="icon-item">
+                <button class="icon-btn active" data-icon="calculator">
+                    <span class="icon-emoji">🧮</span>
+                    <span>计算器</span>
+                </button>
+            </li>
+            <li class="icon-item">
+                <button class="icon-btn" data-icon="mouse">
+                    <span class="icon-emoji">🖱️</span>
+                    <span>鼠标</span>
+                </button>
+            </li>
+            <li class="icon-item">
+                <button class="icon-btn" data-icon="keyboard">
+                    <span class="icon-emoji">⌨️</span>
+                    <span>键盘</span>
+                </button>
+            </li>
+            <li class="icon-item">
+                <button class="icon-btn" data-icon="monitor">
+                    <span class="icon-emoji">🖥️</span>
+                    <span>显示器</span>
+                </button>
+            </li>
+            <li class="icon-item">
+                <button class="icon-btn" data-icon="location">
+                    <span class="icon-emoji">📍</span>
+                    <span>定位</span>
+                </button>
+            </li>
+        </ul>
+    </div>
+    
+    <!-- 右侧主内容区 -->
+    <div class="main-content">
+        <div class="preview-container">
+            <h1 id="iconTitle">🧮 计算器图标</h1>
+            
+            <div class="canvas-container">
+                <canvas id="previewCanvas" width="256" height="256"></canvas>
+                <p class="info">预览 (256x256)</p>
+            </div>
+            
+            <button class="generate-btn" onclick="openSizeModal()">
+                🎨 生成并下载图标
+            </button>
+            
+            <p class="info" id="iconDescription">
+                点击按钮将生成一个1024x1024像素的计算器图标并自动下载
+            </p>
+        </div>
+    </div>
+    
+    <!-- 尺寸选择弹窗 -->
+    <div class="size-modal" id="sizeModal">
+        <div class="size-modal-content">
+            <div class="size-modal-header">
+                <h3>📏 选择尺寸</h3>
+                <button class="close-btn" onclick="closeSizeModal()">&times;</button>
+            </div>
+            <div class="size-options">
+                <div class="preset-sizes">
+                    <button class="size-btn" data-size="24">24px</button>
+                    <button class="size-btn" data-size="32">32px</button>
+                    <button class="size-btn" data-size="64">64px</button>
+                    <button class="size-btn" data-size="128">128px</button>
+                    <button class="size-btn active" data-size="1024">1024px</button>
+                </div>
+                <div class="custom-size">
+                    <input type="number" id="customSize" placeholder="自定义" min="16" max="2048" value="1024">
+                    <span class="px-label">px</span>
+                </div>
+            </div>
+            <div class="size-info">
+                <p class="current-size">当前尺寸: <span id="currentSizeDisplay">1024px</span></p>
+                <p class="size-tip">💡 常用尺寸: 24px(工具栏), 32px(任务栏), 64px(桌面), 128px(应用商店), 1024px(高质量)</p>
+            </div>
+            <div class="modal-actions">
+                <button class="cancel-btn" onclick="closeSizeModal()">取消</button>
+                <button class="confirm-btn" onclick="confirmSizeAndDownload()">确认并下载</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入JavaScript文件 -->
+    <script src="js/utils.js"></script>
+    <script src="js/calculator-icon.js"></script>
+    <script src="js/mouse-icon.js"></script>
+    <script src="js/keyboard-icon.js"></script>
+    <script src="js/monitor-icon.js"></script>
+    <script src="js/location-icon.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
