@@ -72,16 +72,112 @@
                 <button class="close-btn" onclick="closeSizeModal()">&times;</button>
             </div>
             <div class="size-options">
-                <div class="preset-sizes">
-                    <button class="size-btn" data-size="24">24px</button>
-                    <button class="size-btn" data-size="32">32px</button>
-                    <button class="size-btn" data-size="64">64px</button>
-                    <button class="size-btn" data-size="128">128px</button>
-                    <button class="size-btn active" data-size="1024">1024px</button>
+                <div class="download-type-tabs">
+                    <button class="tab-btn active" data-type="custom">自定义尺寸</button>
+                    <button class="tab-btn" data-type="ios">iOS应用图标</button>
                 </div>
-                <div class="custom-size">
-                    <input type="number" id="customSize" placeholder="自定义" min="16" max="2048" value="1024">
-                    <span class="px-label">px</span>
+                
+                <div class="tab-content" id="customSizeTab">
+                    <div class="preset-sizes">
+                        <button class="size-btn" data-size="24">24px</button>
+                        <button class="size-btn" data-size="32">32px</button>
+                        <button class="size-btn" data-size="64">64px</button>
+                        <button class="size-btn" data-size="128">128px</button>
+                        <button class="size-btn active" data-size="1024">1024px</button>
+                    </div>
+                    <div class="custom-size">
+                        <input type="number" id="customSize" placeholder="自定义" min="16" max="2048" value="1024">
+                        <span class="px-label">px</span>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="iosSizeTab" style="display: none;">
+                    <div class="ios-info">
+                        <p class="ios-description">📱 一键下载所有iOS应用图标尺寸，包含iPhone、iPad所需的所有规格，自动压缩为ZIP文件</p>
+                    </div>
+                    <div class="ios-sizes">
+                        <div class="ios-category">
+                            <h4>📱 iPhone 主屏幕</h4>
+                            <div class="ios-size-grid">
+                                <div class="ios-size-item">
+                                    <span class="ios-size-name">appIcon_60@2x.png</span>
+                                    <span class="ios-size-value">120×120</span>
+                                </div>
+                                <div class="ios-size-item">
+                                    <span class="ios-size-name">appIcon_60@3x.png</span>
+                                    <span class="ios-size-value">180×180</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ios-category">
+                            <h4>⚙️ 设置 & 通知</h4>
+                            <div class="ios-size-grid">
+                                <div class="ios-size-item">
+                                    <span class="ios-size-name">appIcon_29.png</span>
+                                    <span class="ios-size-value">29×29</span>
+                                </div>
+                                <div class="ios-size-item">
+                                    <span class="ios-size-name">appIcon_29@2x.png</span>
+                                    <span class="ios-size-value">58×58</span>
+                                </div>
+                                <div class="ios-size-item">
+                                    <span class="ios-size-name">appIcon_29@3x.png</span>
+                                    <span class="ios-size-value">87×87</span>
+                                </div>
+                                <div class="ios-size-item">
+                                    <span class="ios-size-name">appIcon_20.png</span>
+                                    <span class="ios-size-value">20×20</span>
+                                </div>
+                                <div class="ios-size-item">
+                                    <span class="ios-size-name">appIcon_20@2x.png</span>
+                                    <span class="ios-size-value">40×40</span>
+                                </div>
+                                <div class="ios-size-item">
+                                    <span class="ios-size-name">appIcon_20@3x.png</span>
+                                    <span class="ios-size-value">60×60</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ios-category">
+                            <h4>🔍 Spotlight 搜索</h4>
+                            <div class="ios-size-grid">
+                                <div class="ios-size-item">
+                                    <span class="ios-size-name">appIcon_40.png</span>
+                                    <span class="ios-size-value">40×40</span>
+                                </div>
+                                <div class="ios-size-item">
+                                    <span class="ios-size-name">appIcon_40@2x.png</span>
+                                    <span class="ios-size-value">80×80</span>
+                                </div>
+                                <div class="ios-size-item">
+                                    <span class="ios-size-name">appIcon_40@3x.png</span>
+                                    <span class="ios-size-value">120×120</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ios-category">
+                            <h4>📱 iPad</h4>
+                            <div class="ios-size-grid">
+                                <div class="ios-size-item">
+                                    <span class="ios-size-name">appIcon_76@2x.png</span>
+                                    <span class="ios-size-value">152×152</span>
+                                </div>
+                                <div class="ios-size-item">
+                                    <span class="ios-size-name">appIcon_83.5@2x.png</span>
+                                    <span class="ios-size-value">167×167</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ios-category">
+                            <h4>🏪 App Store</h4>
+                            <div class="ios-size-grid">
+                                <div class="ios-size-item">
+                                    <span class="ios-size-name">appIcon_1024.png</span>
+                                    <span class="ios-size-value">1024×1024</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="size-info">
@@ -90,12 +186,13 @@
             </div>
             <div class="modal-actions">
                 <button class="cancel-btn" onclick="closeSizeModal()">取消</button>
-                <button class="confirm-btn" onclick="confirmSizeAndDownload()">确认并下载</button>
+                <button class="confirm-btn" id="confirmBtn" onclick="confirmSizeAndDownload()">确认并下载</button>
             </div>
         </div>
     </div>
 
     <!-- 引入JavaScript文件 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/calculator-icon.js"></script>
     <script src="js/mouse-icon.js"></script>
