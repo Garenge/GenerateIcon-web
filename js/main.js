@@ -687,12 +687,20 @@ async function generateSimpleIconFromPrompt(prompt) {
     }
     
     // 提取图标
-    let iconConfig = { emoji: '🎨', shape: 'circle' };
+    let iconConfig = { emoji: null, shape: 'circle' };
     for (const [key, config] of Object.entries(iconConfigs)) {
         if (promptLower.includes(key)) {
             iconConfig = config;
             break;
         }
+    }
+    
+    // 如果没有找到预设图标，使用用户输入的文字
+    if (!iconConfig.emoji) {
+        // 提取第一个单词或前7个字符
+        const words = prompt.trim().split(/\s+/);
+        const firstWord = words[0] || 'ICON';
+        iconConfig.emoji = firstWord.substring(0, 7).toUpperCase();
     }
     
     // 绘制背景
@@ -724,10 +732,28 @@ async function generateSimpleIconFromPrompt(prompt) {
     
     // 绘制图标
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 100px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(iconConfig.emoji, 256, 256);
+    
+    if (iconConfig.emoji && iconConfig.emoji.length <= 2) {
+        // 如果是emoji（通常1-2个字符），使用大字体
+        ctx.font = 'bold 100px Arial';
+        ctx.fillText(iconConfig.emoji, 256, 256);
+    } else {
+        // 如果是文字，使用合适的字体大小
+        const textLength = iconConfig.emoji.length;
+        let fontSize = 120;
+        
+        // 根据文字长度调整字体大小
+        if (textLength > 4) {
+            fontSize = 80;
+        } else if (textLength > 2) {
+            fontSize = 100;
+        }
+        
+        ctx.font = `bold ${fontSize}px Arial`;
+        ctx.fillText(iconConfig.emoji, 256, 256);
+    }
     
     // 添加高光效果
     ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
