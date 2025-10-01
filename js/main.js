@@ -56,14 +56,23 @@ let textSettings = {
     textColor: '#ffffff'
 };
 
-// 底图设置配置
-let backgroundSettings = {
+// 背景A设置配置（图标外框）
+let backgroundASettings = {
+    backgroundColor: '#ffffff', // 外框背景色
+    borderWidth: 0,
+    borderColor: '#e9ecef',
+    padding: 0 // 底图A的内边距，控制底图B的大小
+};
+
+// 底图B设置配置（可变形底色）
+let backgroundBSettings = {
     backgroundShape: 'rounded',
     cornerRadius: 40,
     backgroundColor: '#667eea',
     iconPadding: 20,
     shadowIntensity: 20,
-    borderWidth: 0
+    borderWidth: 0,
+    borderColor: '#000000' // 底图B边框颜色
 }; // 存储AI生成的图像数据
 
 // iOS应用图标尺寸配置 - 按照pt尺寸和倍率配置
@@ -205,25 +214,138 @@ function confirmSizeAndDownload() {
 }
 
 /**
- * 生成并下载图标
+ * 生成并下载图标 - 三层结构
  */
 function generateAndDownload() {
     const canvas = document.createElement('canvas');
     canvas.width = currentSize;
     canvas.height = currentSize;
+    const ctx = canvas.getContext('2d');
     
+    // 更新设置值
+    updateBackgroundASettings();
+    updateBackgroundBSettings();
+    
+    // 根据画布尺寸计算缩放比例
+    const scale = currentSize / 256; // 256是预览画布的尺寸
+    
+    // 按比例调整设置值
+    const scaledPaddingA = backgroundASettings.padding * scale;
+    const scaledPaddingB = backgroundBSettings.iconPadding * scale;
+    const scaledCornerRadius = backgroundBSettings.cornerRadius * scale;
+    const scaledBorderWidthA = backgroundASettings.borderWidth * scale;
+    const scaledBorderWidthB = backgroundBSettings.borderWidth * scale;
+    const scaledShadowIntensity = backgroundBSettings.shadowIntensity * scale;
+    
+    // 第一层：背景A（图标外框）
+    ctx.fillStyle = backgroundASettings.backgroundColor;
+    ctx.fillRect(0, 0, currentSize, currentSize);
+    
+    // 绘制背景A边框
+    if (scaledBorderWidthA > 0) {
+        ctx.strokeStyle = backgroundASettings.borderColor;
+        ctx.lineWidth = scaledBorderWidthA;
+        ctx.strokeRect(0, 0, currentSize, currentSize);
+    }
+    
+    // 第二层：底图B（可变形底色）- 根据底图A的内边距调整大小
+    ctx.fillStyle = backgroundBSettings.backgroundColor;
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+    ctx.shadowBlur = scaledShadowIntensity;
+    ctx.shadowOffsetY = 4 * scale;
+    
+    // 根据底图A的内边距计算底图B的绘制区域
+    const bgBX = scaledPaddingA;
+    const bgBY = scaledPaddingA;
+    const bgBWidth = currentSize - scaledPaddingA * 2;
+    const bgBHeight = currentSize - scaledPaddingA * 2;
+    
+    // 根据形状绘制底图B
+    if (backgroundBSettings.backgroundShape === 'circle') {
+        ctx.beginPath();
+        ctx.arc(currentSize / 2, currentSize / 2, bgBWidth / 2, 0, 2 * Math.PI);
+        ctx.fill();
+    } else if (backgroundBSettings.backgroundShape === 'rounded') {
+        const radius = scaledCornerRadius;
+        ctx.beginPath();
+        ctx.moveTo(bgBX + radius, bgBY);
+        ctx.lineTo(bgBX + bgBWidth - radius, bgBY);
+        ctx.quadraticCurveTo(bgBX + bgBWidth, bgBY, bgBX + bgBWidth, bgBY + radius);
+        ctx.lineTo(bgBX + bgBWidth, bgBY + bgBHeight - radius);
+        ctx.quadraticCurveTo(bgBX + bgBWidth, bgBY + bgBHeight, bgBX + bgBWidth - radius, bgBY + bgBHeight);
+        ctx.lineTo(bgBX + radius, bgBY + bgBHeight);
+        ctx.quadraticCurveTo(bgBX, bgBY + bgBHeight, bgBX, bgBY + bgBHeight - radius);
+        ctx.lineTo(bgBX, bgBY + radius);
+        ctx.quadraticCurveTo(bgBX, bgBY, bgBX + radius, bgBY);
+        ctx.closePath();
+        ctx.fill();
+    } else { // square
+        ctx.fillRect(bgBX, bgBY, bgBWidth, bgBHeight);
+    }
+    
+    // 绘制底图B边框
+    if (scaledBorderWidthB > 0) {
+        ctx.strokeStyle = backgroundBSettings.borderColor || '#000000';
+        ctx.lineWidth = scaledBorderWidthB;
+        ctx.shadowColor = 'transparent'; // 边框不需要阴影
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetY = 0;
+        
+        if (backgroundBSettings.backgroundShape === 'circle') {
+            ctx.beginPath();
+            ctx.arc(currentSize / 2, currentSize / 2, bgBWidth / 2, 0, 2 * Math.PI);
+            ctx.stroke();
+        } else if (backgroundBSettings.backgroundShape === 'rounded') {
+            const radius = scaledCornerRadius;
+            ctx.beginPath();
+            ctx.moveTo(bgBX + radius, bgBY);
+            ctx.lineTo(bgBX + bgBWidth - radius, bgBY);
+            ctx.quadraticCurveTo(bgBX + bgBWidth, bgBY, bgBX + bgBWidth, bgBY + radius);
+            ctx.lineTo(bgBX + bgBWidth, bgBY + bgBHeight - radius);
+            ctx.quadraticCurveTo(bgBX + bgBWidth, bgBY + bgBHeight, bgBX + bgBWidth - radius, bgBY + bgBHeight);
+            ctx.lineTo(bgBX + radius, bgBY + bgBHeight);
+            ctx.quadraticCurveTo(bgBX, bgBY + bgBHeight, bgBX, bgBY + bgBHeight - radius);
+            ctx.lineTo(bgBX, bgBY + radius);
+            ctx.quadraticCurveTo(bgBX, bgBY, bgBX + radius, bgBY);
+            ctx.closePath();
+            ctx.stroke();
+        } else { // square
+            ctx.strokeRect(bgBX, bgBY, bgBWidth, bgBHeight);
+        }
+    }
+    
+    // 保持阴影效果，不重置
+    // 第三层：图标内容 - 直接绘制在底图B上面
+    const padding = scaledPaddingB;
+    const iconSize = currentSize - padding * 2;
+    const iconX = padding;
+    const iconY = padding;
+    
+    // 创建图标绘制区域
+    ctx.save();
+    ctx.translate(iconX, iconY);
+    ctx.scale(iconSize / currentSize, iconSize / currentSize);
+    
+    // 绘制图标内容
     const iconConfig = iconTypes[currentIconType];
-    
     if (currentIconType === 'custom' && aiGeneratedImage) {
-        // 下载AI生成的图标
+        // 绘制AI生成的图标
         drawAIImageOnCanvas(canvas, aiGeneratedImage);
     } else if (iconConfig.generator) {
-        // 下载预设图标
+        // 绘制预设图标 - 不要清空画布，直接绘制在底图上
+        const originalClearCanvas = window.clearCanvas;
+        window.clearCanvas = function() {}; // 临时禁用清空功能
+        
         iconConfig.generator(canvas, currentSize);
+        
+        window.clearCanvas = originalClearCanvas; // 恢复清空功能
     } else {
         alert('请先生成图标');
         return;
     }
+    
+    // 恢复状态
+    ctx.restore();
     
     canvas.toBlob(function(blob) {
         const url = URL.createObjectURL(blob);
@@ -259,17 +381,130 @@ async function downloadAllIOSIcons() {
             const canvas = document.createElement('canvas');
             canvas.width = iconSize.px;
             canvas.height = iconSize.px;
+            const ctx = canvas.getContext('2d');
             
-            // 生成图标
+            // 更新设置值
+            updateBackgroundASettings();
+            updateBackgroundBSettings();
+            
+            // 根据画布尺寸计算缩放比例
+            const scale = iconSize.px / 256; // 256是预览画布的尺寸
+            
+            // 按比例调整设置值
+            const scaledPaddingA = backgroundASettings.padding * scale;
+            const scaledPaddingB = backgroundBSettings.iconPadding * scale;
+            const scaledCornerRadius = backgroundBSettings.cornerRadius * scale;
+            const scaledBorderWidthA = backgroundASettings.borderWidth * scale;
+            const scaledBorderWidthB = backgroundBSettings.borderWidth * scale;
+            const scaledShadowIntensity = backgroundBSettings.shadowIntensity * scale;
+            
+            // 第一层：背景A（图标外框）
+            ctx.fillStyle = backgroundASettings.backgroundColor;
+            ctx.fillRect(0, 0, iconSize.px, iconSize.px);
+            
+            // 绘制背景A边框
+            if (scaledBorderWidthA > 0) {
+                ctx.strokeStyle = backgroundASettings.borderColor;
+                ctx.lineWidth = scaledBorderWidthA;
+                ctx.strokeRect(0, 0, iconSize.px, iconSize.px);
+            }
+            
+            // 第二层：底图B（可变形底色）- 根据底图A的内边距调整大小
+            ctx.fillStyle = backgroundBSettings.backgroundColor;
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+            ctx.shadowBlur = scaledShadowIntensity;
+            ctx.shadowOffsetY = 4 * scale;
+            
+            // 根据底图A的内边距计算底图B的绘制区域
+            const bgBX = scaledPaddingA;
+            const bgBY = scaledPaddingA;
+            const bgBWidth = iconSize.px - scaledPaddingA * 2;
+            const bgBHeight = iconSize.px - scaledPaddingA * 2;
+            
+            // 根据形状绘制底图B
+            if (backgroundBSettings.backgroundShape === 'circle') {
+                ctx.beginPath();
+                ctx.arc(iconSize.px / 2, iconSize.px / 2, bgBWidth / 2, 0, 2 * Math.PI);
+                ctx.fill();
+            } else if (backgroundBSettings.backgroundShape === 'rounded') {
+                const radius = scaledCornerRadius;
+                ctx.beginPath();
+                ctx.moveTo(bgBX + radius, bgBY);
+                ctx.lineTo(bgBX + bgBWidth - radius, bgBY);
+                ctx.quadraticCurveTo(bgBX + bgBWidth, bgBY, bgBX + bgBWidth, bgBY + radius);
+                ctx.lineTo(bgBX + bgBWidth, bgBY + bgBHeight - radius);
+                ctx.quadraticCurveTo(bgBX + bgBWidth, bgBY + bgBHeight, bgBX + bgBWidth - radius, bgBY + bgBHeight);
+                ctx.lineTo(bgBX + radius, bgBY + bgBHeight);
+                ctx.quadraticCurveTo(bgBX, bgBY + bgBHeight, bgBX, bgBY + bgBHeight - radius);
+                ctx.lineTo(bgBX, bgBY + radius);
+                ctx.quadraticCurveTo(bgBX, bgBY, bgBX + radius, bgBY);
+                ctx.closePath();
+                ctx.fill();
+            } else { // square
+                ctx.fillRect(bgBX, bgBY, bgBWidth, bgBHeight);
+            }
+            
+            // 绘制底图B边框
+            if (scaledBorderWidthB > 0) {
+                ctx.strokeStyle = backgroundBSettings.borderColor || '#000000';
+                ctx.lineWidth = scaledBorderWidthB;
+                ctx.shadowColor = 'transparent'; // 边框不需要阴影
+                ctx.shadowBlur = 0;
+                ctx.shadowOffsetY = 0;
+                
+                if (backgroundBSettings.backgroundShape === 'circle') {
+                    ctx.beginPath();
+                    ctx.arc(iconSize.px / 2, iconSize.px / 2, bgBWidth / 2, 0, 2 * Math.PI);
+                    ctx.stroke();
+                } else if (backgroundBSettings.backgroundShape === 'rounded') {
+                    const radius = scaledCornerRadius;
+                    ctx.beginPath();
+                    ctx.moveTo(bgBX + radius, bgBY);
+                    ctx.lineTo(bgBX + bgBWidth - radius, bgBY);
+                    ctx.quadraticCurveTo(bgBX + bgBWidth, bgBY, bgBX + bgBWidth, bgBY + radius);
+                    ctx.lineTo(bgBX + bgBWidth, bgBY + bgBHeight - radius);
+                    ctx.quadraticCurveTo(bgBX + bgBWidth, bgBY + bgBHeight, bgBX + bgBWidth - radius, bgBY + bgBHeight);
+                    ctx.lineTo(bgBX + radius, bgBY + bgBHeight);
+                    ctx.quadraticCurveTo(bgBX, bgBY + bgBHeight, bgBX, bgBY + bgBHeight - radius);
+                    ctx.lineTo(bgBX, bgBY + radius);
+                    ctx.quadraticCurveTo(bgBX, bgBY, bgBX + radius, bgBY);
+                    ctx.closePath();
+                    ctx.stroke();
+                } else { // square
+                    ctx.strokeRect(bgBX, bgBY, bgBWidth, bgBHeight);
+                }
+            }
+            
+            // 保持阴影效果，不重置
+            // 第三层：图标内容 - 直接绘制在底图B上面
+            const padding = scaledPaddingB;
+            const iconSizeScaled = iconSize.px - padding * 2;
+            const iconX = padding;
+            const iconY = padding;
+            
+            // 创建图标绘制区域
+            ctx.save();
+            ctx.translate(iconX, iconY);
+            ctx.scale(iconSizeScaled / iconSize.px, iconSizeScaled / iconSize.px);
+            
+            // 绘制图标内容
             if (currentIconType === 'custom' && aiGeneratedImage) {
-                // 生成AI图标
+                // 绘制AI生成的图标
                 drawAIImageOnCanvas(canvas, aiGeneratedImage);
             } else if (iconConfig.generator) {
-                // 生成预设图标
+                // 绘制预设图标 - 不要清空画布，直接绘制在底图上
+                const originalClearCanvas = window.clearCanvas;
+                window.clearCanvas = function() {}; // 临时禁用清空功能
+                
                 iconConfig.generator(canvas, iconSize.px);
+                
+                window.clearCanvas = originalClearCanvas; // 恢复清空功能
             } else {
                 throw new Error('请先生成图标');
             }
+            
+            // 恢复状态
+            ctx.restore();
             
             // 将canvas转换为blob
             const blob = await new Promise(resolve => {
@@ -677,9 +912,28 @@ function updateTextSettings() {
 }
 
 /**
- * 更新底图设置
+ * 更新背景A设置
  */
-function updateBackgroundSettings() {
+function updateBackgroundASettings() {
+    const backgroundColorEl = document.getElementById('backgroundAColor');
+    const borderWidthEl = document.getElementById('backgroundABorderWidth');
+    const paddingEl = document.getElementById('backgroundAPadding');
+    
+    if (backgroundColorEl) backgroundASettings.backgroundColor = backgroundColorEl.value;
+    if (borderWidthEl) {
+        backgroundASettings.borderWidth = parseInt(borderWidthEl.value);
+        document.getElementById('backgroundABorderWidthValue').textContent = backgroundASettings.borderWidth + 'px';
+    }
+    if (paddingEl) {
+        backgroundASettings.padding = parseInt(paddingEl.value);
+        document.getElementById('backgroundAPaddingValue').textContent = backgroundASettings.padding + 'px';
+    }
+}
+
+/**
+ * 更新底图B设置
+ */
+function updateBackgroundBSettings() {
     const backgroundShapeEl = document.getElementById('backgroundShape');
     const cornerRadiusEl = document.getElementById('cornerRadius');
     const backgroundColorEl = document.getElementById('backgroundColor');
@@ -687,24 +941,26 @@ function updateBackgroundSettings() {
     const shadowIntensityEl = document.getElementById('shadowIntensity');
     const borderWidthEl = document.getElementById('borderWidth');
     
-    if (backgroundShapeEl) backgroundSettings.backgroundShape = backgroundShapeEl.value;
+    if (backgroundShapeEl) backgroundBSettings.backgroundShape = backgroundShapeEl.value;
     if (cornerRadiusEl) {
-        backgroundSettings.cornerRadius = parseInt(cornerRadiusEl.value);
-        document.getElementById('cornerRadiusValue').textContent = backgroundSettings.cornerRadius + 'px';
+        backgroundBSettings.cornerRadius = parseInt(cornerRadiusEl.value);
+        document.getElementById('cornerRadiusValue').textContent = backgroundBSettings.cornerRadius + 'px';
     }
-    if (backgroundColorEl) backgroundSettings.backgroundColor = backgroundColorEl.value;
+    if (backgroundColorEl) backgroundBSettings.backgroundColor = backgroundColorEl.value;
     if (iconPaddingEl) {
-        backgroundSettings.iconPadding = parseInt(iconPaddingEl.value);
-        document.getElementById('iconPaddingValue').textContent = backgroundSettings.iconPadding + 'px';
+        backgroundBSettings.iconPadding = parseInt(iconPaddingEl.value);
+        document.getElementById('iconPaddingValue').textContent = backgroundBSettings.iconPadding + 'px';
     }
     if (shadowIntensityEl) {
-        backgroundSettings.shadowIntensity = parseInt(shadowIntensityEl.value);
-        document.getElementById('shadowIntensityValue').textContent = backgroundSettings.shadowIntensity + 'px';
+        backgroundBSettings.shadowIntensity = parseInt(shadowIntensityEl.value);
+        document.getElementById('shadowIntensityValue').textContent = backgroundBSettings.shadowIntensity + 'px';
     }
     if (borderWidthEl) {
-        backgroundSettings.borderWidth = parseInt(borderWidthEl.value);
-        document.getElementById('borderWidthValue').textContent = backgroundSettings.borderWidth + 'px';
+        backgroundBSettings.borderWidth = parseInt(borderWidthEl.value);
+        document.getElementById('borderWidthValue').textContent = backgroundBSettings.borderWidth + 'px';
     }
+    const borderColorEl = document.getElementById('borderColor');
+    if (borderColorEl) backgroundBSettings.borderColor = borderColorEl.value;
 }
 
 /**
@@ -802,10 +1058,8 @@ function updateTextPreview() {
  * 更新底图预览
  */
 function updateBackgroundPreview() {
-    // 先更新设置值
-    updateBackgroundSettings();
-    
-    // 更新主预览画布
+    updateBackgroundASettings();
+    updateBackgroundBSettings();
     updateMainPreview();
 }
 
@@ -1330,6 +1584,9 @@ document.addEventListener('DOMContentLoaded', function() {
 /**
  * 更新主预览画布 - 组合式显示（底图+图标）
  */
+/**
+ * 更新主预览画布 - 三层结构绘制
+ */
 function updateMainPreview() {
     const previewCanvas = document.getElementById('previewCanvas');
     if (!previewCanvas) return;
@@ -1340,45 +1597,91 @@ function updateMainPreview() {
     // 清空画布
     ctx.clearRect(0, 0, canvasSize, canvasSize);
     
-    // 保存当前状态
-    ctx.save();
+    // 更新设置值
+    updateBackgroundASettings();
+    updateBackgroundBSettings();
     
-    // 绘制底图背景
-    ctx.fillStyle = backgroundSettings.backgroundColor;
+    // 第一层：背景A（图标外框）
+    ctx.fillStyle = backgroundASettings.backgroundColor;
+    ctx.fillRect(0, 0, canvasSize, canvasSize);
+    
+    // 绘制背景A边框
+    if (backgroundASettings.borderWidth > 0) {
+        ctx.strokeStyle = backgroundASettings.borderColor;
+        ctx.lineWidth = backgroundASettings.borderWidth;
+        ctx.strokeRect(0, 0, canvasSize, canvasSize);
+    }
+    
+    // 第二层：底图B（可变形底色）- 根据底图A的内边距调整大小
+    ctx.fillStyle = backgroundBSettings.backgroundColor;
     ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
-    ctx.shadowBlur = backgroundSettings.shadowIntensity;
+    ctx.shadowBlur = backgroundBSettings.shadowIntensity;
     ctx.shadowOffsetY = 4;
     
-    // 根据形状绘制背景
-    if (backgroundSettings.backgroundShape === 'circle') {
+    // 根据底图A的内边距计算底图B的绘制区域
+    const paddingA = backgroundASettings.padding;
+    const bgBX = paddingA;
+    const bgBY = paddingA;
+    const bgBWidth = canvasSize - paddingA * 2;
+    const bgBHeight = canvasSize - paddingA * 2;
+    
+    // 根据形状绘制底图B
+    if (backgroundBSettings.backgroundShape === 'circle') {
         ctx.beginPath();
-        ctx.arc(canvasSize / 2, canvasSize / 2, canvasSize / 2 - 10, 0, 2 * Math.PI);
+        ctx.arc(canvasSize / 2, canvasSize / 2, bgBWidth / 2, 0, 2 * Math.PI);
         ctx.fill();
-    } else if (backgroundSettings.backgroundShape === 'rounded') {
-        const radius = backgroundSettings.cornerRadius;
+    } else if (backgroundBSettings.backgroundShape === 'rounded') {
+        const radius = backgroundBSettings.cornerRadius;
         ctx.beginPath();
-        ctx.moveTo(radius, 10);
-        ctx.lineTo(canvasSize - radius, 10);
-        ctx.quadraticCurveTo(canvasSize - 10, 10, canvasSize - 10, radius);
-        ctx.lineTo(canvasSize - 10, canvasSize - radius);
-        ctx.quadraticCurveTo(canvasSize - 10, canvasSize - 10, canvasSize - radius, canvasSize - 10);
-        ctx.lineTo(radius, canvasSize - 10);
-        ctx.quadraticCurveTo(10, canvasSize - 10, 10, canvasSize - radius);
-        ctx.lineTo(10, radius);
-        ctx.quadraticCurveTo(10, 10, radius, 10);
+        ctx.moveTo(bgBX + radius, bgBY);
+        ctx.lineTo(bgBX + bgBWidth - radius, bgBY);
+        ctx.quadraticCurveTo(bgBX + bgBWidth, bgBY, bgBX + bgBWidth, bgBY + radius);
+        ctx.lineTo(bgBX + bgBWidth, bgBY + bgBHeight - radius);
+        ctx.quadraticCurveTo(bgBX + bgBWidth, bgBY + bgBHeight, bgBX + bgBWidth - radius, bgBY + bgBHeight);
+        ctx.lineTo(bgBX + radius, bgBY + bgBHeight);
+        ctx.quadraticCurveTo(bgBX, bgBY + bgBHeight, bgBX, bgBY + bgBHeight - radius);
+        ctx.lineTo(bgBX, bgBY + radius);
+        ctx.quadraticCurveTo(bgBX, bgBY, bgBX + radius, bgBY);
         ctx.closePath();
         ctx.fill();
     } else { // square
-        ctx.fillRect(10, 10, canvasSize - 20, canvasSize - 20);
+        ctx.fillRect(bgBX, bgBY, bgBWidth, bgBHeight);
     }
     
-    // 重置阴影
-    ctx.shadowColor = 'transparent';
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetY = 0;
+    // 绘制底图B边框
+    if (backgroundBSettings.borderWidth > 0) {
+        ctx.strokeStyle = backgroundBSettings.borderColor || '#000000';
+        ctx.lineWidth = backgroundBSettings.borderWidth;
+        ctx.shadowColor = 'transparent'; // 边框不需要阴影
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetY = 0;
+        
+        if (backgroundBSettings.backgroundShape === 'circle') {
+            ctx.beginPath();
+            ctx.arc(canvasSize / 2, canvasSize / 2, bgBWidth / 2, 0, 2 * Math.PI);
+            ctx.stroke();
+        } else if (backgroundBSettings.backgroundShape === 'rounded') {
+            const radius = backgroundBSettings.cornerRadius;
+            ctx.beginPath();
+            ctx.moveTo(bgBX + radius, bgBY);
+            ctx.lineTo(bgBX + bgBWidth - radius, bgBY);
+            ctx.quadraticCurveTo(bgBX + bgBWidth, bgBY, bgBX + bgBWidth, bgBY + radius);
+            ctx.lineTo(bgBX + bgBWidth, bgBY + bgBHeight - radius);
+            ctx.quadraticCurveTo(bgBX + bgBWidth, bgBY + bgBHeight, bgBX + bgBWidth - radius, bgBY + bgBHeight);
+            ctx.lineTo(bgBX + radius, bgBY + bgBHeight);
+            ctx.quadraticCurveTo(bgBX, bgBY + bgBHeight, bgBX, bgBY + bgBHeight - radius);
+            ctx.lineTo(bgBX, bgBY + radius);
+            ctx.quadraticCurveTo(bgBX, bgBY, bgBX + radius, bgBY);
+            ctx.closePath();
+            ctx.stroke();
+        } else { // square
+            ctx.strokeRect(bgBX, bgBY, bgBWidth, bgBHeight);
+        }
+    }
     
-    // 设置图标绘制区域（考虑内边距）
-    const padding = backgroundSettings.iconPadding;
+    // 保持阴影效果，不重置
+    // 第三层：图标内容 - 直接绘制在底图B上面
+    const padding = backgroundBSettings.iconPadding;
     const iconSize = canvasSize - padding * 2;
     const iconX = padding;
     const iconY = padding;
@@ -1393,15 +1696,19 @@ function updateMainPreview() {
         // 绘制AI生成的图标
         drawAIImageOnCanvas(previewCanvas, aiGeneratedImage);
     } else if (currentIconType !== 'custom') {
-        // 绘制预设图标
+        // 绘制预设图标 - 不要清空画布，直接绘制在底图上
+        const originalClearCanvas = window.clearCanvas;
+        window.clearCanvas = function() {}; // 临时禁用清空功能
+        
         const iconConfig = iconTypes[currentIconType];
         if (iconConfig && iconConfig.generator) {
             iconConfig.generator(previewCanvas, canvasSize);
         }
+        
+        window.clearCanvas = originalClearCanvas; // 恢复清空功能
     }
     
     // 恢复状态
-    ctx.restore();
     ctx.restore();
 }
 

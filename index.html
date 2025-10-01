@@ -57,49 +57,80 @@
                 <button class="close-settings-btn" onclick="toggleSettingsPanel()">&times;</button>
             </div>
             <div class="settings-content">
-                <div class="setting-group">
-                    <label for="backgroundShape">背景形状</label>
-                    <select id="backgroundShape" onchange="updateBackgroundPreview()">
-                        <option value="circle">圆形</option>
-                        <option value="rounded" selected>圆角矩形</option>
-                        <option value="square">方形</option>
-                    </select>
-                </div>
-                
-                <div class="setting-group">
-                    <label for="cornerRadius">圆角大小</label>
-                    <div class="range-container">
-                        <input type="range" id="cornerRadius" min="0" max="50" value="40" onchange="updateBackgroundPreview()">
-                        <span class="range-value" id="cornerRadiusValue">40px</span>
+                <!-- 背景A设置（图标外框） -->
+                <div class="settings-section">
+                    <h4>🖼️ 图标外框</h4>
+                    <div class="setting-group">
+                        <label for="backgroundAColor">外框背景色</label>
+                        <input type="color" id="backgroundAColor" value="#ffffff" onchange="updateBackgroundPreview()">
+                    </div>
+                    <div class="setting-group">
+                        <label for="backgroundABorderWidth">外框边框</label>
+                        <div class="range-container">
+                            <input type="range" id="backgroundABorderWidth" min="0" max="10" value="0" onchange="updateBackgroundPreview()">
+                            <span class="range-value" id="backgroundABorderWidthValue">0px</span>
+                        </div>
+                    </div>
+                    <div class="setting-group">
+                        <label for="backgroundAPadding">外框内边距</label>
+                        <div class="range-container">
+                            <input type="range" id="backgroundAPadding" min="0" max="100" value="0" onchange="updateBackgroundPreview()">
+                            <span class="range-value" id="backgroundAPaddingValue">0px</span>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="setting-group">
-                    <label for="backgroundColor">背景颜色</label>
-                    <input type="color" id="backgroundColor" value="#667eea" onchange="updateBackgroundPreview()">
-                </div>
-                
-                <div class="setting-group">
-                    <label for="iconPadding">内边距</label>
-                    <div class="range-container">
-                        <input type="range" id="iconPadding" min="0" max="100" value="20" onchange="updateBackgroundPreview()">
-                        <span class="range-value" id="iconPaddingValue">20px</span>
+                <!-- 底图B设置（可变形底色） -->
+                <div class="settings-section">
+                    <h4>🎨 底图样式</h4>
+                    <div class="setting-group">
+                        <label for="backgroundShape">底图形状</label>
+                        <select id="backgroundShape" onchange="updateBackgroundPreview()">
+                            <option value="circle">圆形</option>
+                            <option value="rounded" selected>圆角矩形</option>
+                            <option value="square">方形</option>
+                        </select>
                     </div>
-                </div>
-                
-                <div class="setting-group">
-                    <label for="shadowIntensity">阴影强度</label>
-                    <div class="range-container">
-                        <input type="range" id="shadowIntensity" min="0" max="30" value="20" onchange="updateBackgroundPreview()">
-                        <span class="range-value" id="shadowIntensityValue">20px</span>
+                    
+                    <div class="setting-group">
+                        <label for="cornerRadius">圆角大小</label>
+                        <div class="range-container">
+                            <input type="range" id="cornerRadius" min="0" max="50" value="40" onchange="updateBackgroundPreview()">
+                            <span class="range-value" id="cornerRadiusValue">40px</span>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="setting-group">
-                    <label for="borderWidth">边框宽度</label>
-                    <div class="range-container">
-                        <input type="range" id="borderWidth" min="0" max="10" value="0" onchange="updateBackgroundPreview()">
-                        <span class="range-value" id="borderWidthValue">0px</span>
+                    
+                    <div class="setting-group">
+                        <label for="backgroundColor">底图颜色</label>
+                        <input type="color" id="backgroundColor" value="#667eea" onchange="updateBackgroundPreview()">
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label for="iconPadding">内边距</label>
+                        <div class="range-container">
+                            <input type="range" id="iconPadding" min="0" max="100" value="20" onchange="updateBackgroundPreview()">
+                            <span class="range-value" id="iconPaddingValue">20px</span>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label for="shadowIntensity">阴影强度</label>
+                        <div class="range-container">
+                            <input type="range" id="shadowIntensity" min="0" max="30" value="20" onchange="updateBackgroundPreview()">
+                            <span class="range-value" id="shadowIntensityValue">20px</span>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label for="borderWidth">底图边框</label>
+                        <div class="range-container">
+                            <input type="range" id="borderWidth" min="0" max="10" value="0" onchange="updateBackgroundPreview()">
+                            <span class="range-value" id="borderWidthValue">0px</span>
+                        </div>
+                    </div>
+                    <div class="setting-group">
+                        <label for="borderColor">底图边框颜色</label>
+                        <input type="color" id="borderColor" value="#000000" onchange="updateBackgroundPreview()">
                     </div>
                 </div>
             </div>
@@ -222,56 +253,7 @@
                     </div>
                 </div>
             </div>
-            <!-- 底图设置区域 -->
-            <div class="background-settings">
-                <h4>🎨 底图设置</h4>
-                <div class="background-settings-grid">
-                    <div class="setting-item">
-                        <label for="backgroundShape">背景形状：</label>
-                        <select id="backgroundShape" onchange="updateBackgroundPreview()">
-                            <option value="circle">圆形</option>
-                            <option value="rounded" selected>圆角矩形</option>
-                            <option value="square">方形</option>
-                        </select>
-                    </div>
-                    <div class="setting-item">
-                        <label for="cornerRadius">圆角大小：</label>
-                        <input type="range" id="cornerRadius" min="0" max="50" value="40" onchange="updateBackgroundPreview()">
-                        <span class="setting-hint" id="cornerRadiusValue">40px</span>
-                    </div>
-                    <div class="setting-item">
-                        <label for="backgroundColor">背景颜色：</label>
-                        <input type="color" id="backgroundColor" value="#667eea" onchange="updateBackgroundPreview()">
-                    </div>
-                    <div class="setting-item">
-                        <label for="iconPadding">内边距：</label>
-                        <input type="range" id="iconPadding" min="0" max="100" value="20" onchange="updateBackgroundPreview()">
-                        <span class="setting-hint" id="iconPaddingValue">20px</span>
-                    </div>
-                    <div class="setting-item">
-                        <label for="shadowIntensity">阴影强度：</label>
-                        <input type="range" id="shadowIntensity" min="0" max="30" value="20" onchange="updateBackgroundPreview()">
-                        <span class="setting-hint" id="shadowIntensityValue">20px</span>
-                    </div>
-                    <div class="setting-item">
-                        <label for="borderWidth">边框宽度：</label>
-                        <input type="range" id="borderWidth" min="0" max="10" value="0" onchange="updateBackgroundPreview()">
-                        <span class="setting-hint" id="borderWidthValue">0px</span>
-                    </div>
-                </div>
-                
-                <!-- 底图预览 -->
-                <div class="background-preview">
-                    <h5>🔍 底图预览</h5>
-                    <div class="preview-container">
-                        <canvas id="backgroundPreviewCanvas" width="120" height="120"></canvas>
-                        <div class="preview-info">
-                            <p class="preview-text" id="backgroundPreviewText">图标预览</p>
-                            <p class="preview-details" id="backgroundPreviewDetails">形状: 圆角矩形, 颜色: #667eea</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            
             
             <div class="size-info">
                 <p class="current-size">当前尺寸: <span id="currentSizeDisplay">1024px</span></p>
