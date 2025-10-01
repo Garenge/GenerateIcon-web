@@ -7,66 +7,102 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- 左侧图标列表 -->
-    <div class="sidebar">
-        <h2>🎨 图标类型</h2>
-        <ul class="icon-list">
-            <li class="icon-item">
-                <button class="icon-btn active" data-icon="calculator">
-                    <span class="icon-emoji">🧮</span>
-                    <span>计算器</span>
-                </button>
-            </li>
-            <li class="icon-item">
-                <button class="icon-btn" data-icon="mouse">
-                    <span class="icon-emoji">🖱️</span>
-                    <span>鼠标</span>
-                </button>
-            </li>
-            <li class="icon-item">
-                <button class="icon-btn" data-icon="keyboard">
-                    <span class="icon-emoji">⌨️</span>
-                    <span>键盘</span>
-                </button>
-            </li>
-            <li class="icon-item">
-                <button class="icon-btn" data-icon="monitor">
-                    <span class="icon-emoji">🖥️</span>
-                    <span>显示器</span>
-                </button>
-            </li>
-            <li class="icon-item">
-                <button class="icon-btn" data-icon="location">
-                    <span class="icon-emoji">📍</span>
-                    <span>定位</span>
-                </button>
-            </li>
-            <li class="icon-item">
-                <button class="icon-btn" data-icon="custom">
-                    <span class="icon-emoji">🎨</span>
-                    <span>自定义AI生成</span>
-                </button>
-            </li>
-        </ul>
-    </div>
     
-    <!-- 右侧主内容区 -->
-    <div class="main-content">
-        <div class="preview-container">
-            <h1 id="iconTitle">🧮 计算器图标</h1>
-            
-            <div class="canvas-container">
-                <canvas id="previewCanvas" width="256" height="256"></canvas>
-                <p class="info">预览 (256x256)</p>
+    <!-- 三栏布局 -->
+    <div class="three-column-layout">
+        <!-- 左侧：图标类型选择 -->
+        <div class="left-column">
+            <div class="icon-selection">
+                <h3>图标类型</h3>
+                <ul class="icon-list">
+                    <li><button class="icon-btn active" data-icon="calculator" onclick="switchIconType('calculator')">🧮 计算器</button></li>
+                    <li><button class="icon-btn" data-icon="mouse" onclick="switchIconType('mouse')">🖱️ 鼠标</button></li>
+                    <li><button class="icon-btn" data-icon="keyboard" onclick="switchIconType('keyboard')">⌨️ 键盘</button></li>
+                    <li><button class="icon-btn" data-icon="monitor" onclick="switchIconType('monitor')">🖥️ 显示器</button></li>
+                    <li><button class="icon-btn" data-icon="location" onclick="switchIconType('location')">📍 位置</button></li>
+                    <li><button class="icon-btn" data-icon="custom" onclick="openAIModal()">🎨 AI生成</button></li>
+                </ul>
             </div>
-            
-            <button class="generate-btn" onclick="openSizeModal()">
-                🎨 生成并下载图标
-            </button>
-            
-            <p class="info" id="iconDescription">
-                点击按钮将生成一个1024x1024像素的计算器图标并自动下载
-            </p>
+        </div>
+        
+        <!-- 中间：预览区域 -->
+        <div class="center-column">
+            <div class="preview-container">
+                <div class="preview-header">
+                    <h1 id="iconTitle">🧮 计算器图标</h1>
+                    <button class="settings-btn" onclick="toggleSettingsPanel()" title="底图设置">
+                        <span class="settings-icon">⚙️</span>
+                    </button>
+                </div>
+                
+                <div class="canvas-container">
+                    <canvas id="previewCanvas" width="256" height="256"></canvas>
+                    <p class="info">预览 (256x256)</p>
+                </div>
+                
+                <button class="generate-btn" onclick="openSizeModal()">
+                    🎨 生成并下载图标
+                </button>
+                
+                <p class="info" id="iconDescription">
+                    点击按钮将生成一个1024x1024像素的计算器图标并自动下载
+                </p>
+            </div>
+        </div>
+        
+        <!-- 右侧：底图设置 -->
+        <div class="right-column" id="settingsPanel">
+            <div class="settings-header">
+                <h3>🎨 底图设置</h3>
+                <button class="close-settings-btn" onclick="toggleSettingsPanel()">&times;</button>
+            </div>
+            <div class="settings-content">
+                <div class="setting-group">
+                    <label for="backgroundShape">背景形状</label>
+                    <select id="backgroundShape" onchange="updateBackgroundPreview()">
+                        <option value="circle">圆形</option>
+                        <option value="rounded" selected>圆角矩形</option>
+                        <option value="square">方形</option>
+                    </select>
+                </div>
+                
+                <div class="setting-group">
+                    <label for="cornerRadius">圆角大小</label>
+                    <div class="range-container">
+                        <input type="range" id="cornerRadius" min="0" max="50" value="40" onchange="updateBackgroundPreview()">
+                        <span class="range-value" id="cornerRadiusValue">40px</span>
+                    </div>
+                </div>
+                
+                <div class="setting-group">
+                    <label for="backgroundColor">背景颜色</label>
+                    <input type="color" id="backgroundColor" value="#667eea" onchange="updateBackgroundPreview()">
+                </div>
+                
+                <div class="setting-group">
+                    <label for="iconPadding">内边距</label>
+                    <div class="range-container">
+                        <input type="range" id="iconPadding" min="0" max="100" value="20" onchange="updateBackgroundPreview()">
+                        <span class="range-value" id="iconPaddingValue">20px</span>
+                    </div>
+                </div>
+                
+                <div class="setting-group">
+                    <label for="shadowIntensity">阴影强度</label>
+                    <div class="range-container">
+                        <input type="range" id="shadowIntensity" min="0" max="30" value="20" onchange="updateBackgroundPreview()">
+                        <span class="range-value" id="shadowIntensityValue">20px</span>
+                    </div>
+                </div>
+                
+                <div class="setting-group">
+                    <label for="borderWidth">边框宽度</label>
+                    <div class="range-container">
+                        <input type="range" id="borderWidth" min="0" max="10" value="0" onchange="updateBackgroundPreview()">
+                        <span class="range-value" id="borderWidthValue">0px</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -186,6 +222,57 @@
                     </div>
                 </div>
             </div>
+            <!-- 底图设置区域 -->
+            <div class="background-settings">
+                <h4>🎨 底图设置</h4>
+                <div class="background-settings-grid">
+                    <div class="setting-item">
+                        <label for="backgroundShape">背景形状：</label>
+                        <select id="backgroundShape" onchange="updateBackgroundPreview()">
+                            <option value="circle">圆形</option>
+                            <option value="rounded" selected>圆角矩形</option>
+                            <option value="square">方形</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label for="cornerRadius">圆角大小：</label>
+                        <input type="range" id="cornerRadius" min="0" max="50" value="40" onchange="updateBackgroundPreview()">
+                        <span class="setting-hint" id="cornerRadiusValue">40px</span>
+                    </div>
+                    <div class="setting-item">
+                        <label for="backgroundColor">背景颜色：</label>
+                        <input type="color" id="backgroundColor" value="#667eea" onchange="updateBackgroundPreview()">
+                    </div>
+                    <div class="setting-item">
+                        <label for="iconPadding">内边距：</label>
+                        <input type="range" id="iconPadding" min="0" max="100" value="20" onchange="updateBackgroundPreview()">
+                        <span class="setting-hint" id="iconPaddingValue">20px</span>
+                    </div>
+                    <div class="setting-item">
+                        <label for="shadowIntensity">阴影强度：</label>
+                        <input type="range" id="shadowIntensity" min="0" max="30" value="20" onchange="updateBackgroundPreview()">
+                        <span class="setting-hint" id="shadowIntensityValue">20px</span>
+                    </div>
+                    <div class="setting-item">
+                        <label for="borderWidth">边框宽度：</label>
+                        <input type="range" id="borderWidth" min="0" max="10" value="0" onchange="updateBackgroundPreview()">
+                        <span class="setting-hint" id="borderWidthValue">0px</span>
+                    </div>
+                </div>
+                
+                <!-- 底图预览 -->
+                <div class="background-preview">
+                    <h5>🔍 底图预览</h5>
+                    <div class="preview-container">
+                        <canvas id="backgroundPreviewCanvas" width="120" height="120"></canvas>
+                        <div class="preview-info">
+                            <p class="preview-text" id="backgroundPreviewText">图标预览</p>
+                            <p class="preview-details" id="backgroundPreviewDetails">形状: 圆角矩形, 颜色: #667eea</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <div class="size-info">
                 <p class="current-size">当前尺寸: <span id="currentSizeDisplay">1024px</span></p>
                 <p class="size-tip">💡 常用尺寸: 24px(工具栏), 32px(任务栏), 64px(桌面), 128px(应用商店), 1024px(高质量)</p>
@@ -207,7 +294,7 @@
             <div class="ai-modal-body">
                 <div class="ai-input-section">
                     <label for="aiPrompt">描述你想要的图标：</label>
-                    <textarea id="aiPrompt" placeholder="例如：calculator icon, minimalist style, blue color, white background" rows="3"></textarea>
+                    <textarea id="aiPrompt" placeholder="例如：calculator icon, minimalist style, blue color, white background" rows="3" oninput="checkAndShowTextSettings(this.value); updateTextPreview()"></textarea>
                 </div>
                 <div class="ai-examples">
                     <p class="examples-title">💡 提示词示例：</p>
@@ -226,6 +313,83 @@
                 </div>
                 <div class="ai-tips">
                     <p>💡 提示：输入图标描述，系统会根据关键词智能生成图标。支持中英文，包含颜色、类型等关键词效果更好</p>
+                </div>
+                
+                <!-- 文字设置模块 -->
+                <div class="text-settings-module">
+                    <div class="module-header" onclick="toggleTextSettings()">
+                        <div class="header-content">
+                            <span class="module-icon">📝</span>
+                            <span class="module-title">文字设置</span>
+                            <span class="module-subtitle" id="textSettingsSubtitle">点击展开设置选项</span>
+                        </div>
+                        <div class="toggle-icon" id="textSettingsToggle">▼</div>
+                    </div>
+                    
+                    <div class="module-content" id="textSettingsContent" style="display: none;">
+                        <div class="settings-grid">
+                            <div class="setting-item">
+                                <label for="fontSize">字体大小：</label>
+                                <select id="fontSize" onchange="handleFontSizeChange(); updateTextPreview()">
+                                    <option value="small">小 (80px)</option>
+                                    <option value="medium" selected>中 (100px)</option>
+                                    <option value="large">大 (120px)</option>
+                                    <option value="custom">自定义</option>
+                                </select>
+                                <input type="number" id="customFontSize" placeholder="像素" min="20" max="200" style="display: none;" onchange="updateTextPreview()">
+                            </div>
+                            <div class="setting-item">
+                                <label for="fontFamily">字体类型：</label>
+                                <select id="fontFamily" onchange="updateTextPreview()">
+                                    <option value="Arial">Arial</option>
+                                    <option value="Helvetica">Helvetica</option>
+                                    <option value="Georgia">Georgia</option>
+                                    <option value="Times New Roman">Times New Roman</option>
+                                    <option value="Courier New">Courier New</option>
+                                    <option value="Verdana">Verdana</option>
+                                    <option value="Impact">Impact</option>
+                                    <option value="Comic Sans MS">Comic Sans MS</option>
+                                </select>
+                            </div>
+                            <div class="setting-item">
+                                <label for="textStyle">文字样式：</label>
+                                <select id="textStyle" onchange="updateTextPreview()">
+                                    <option value="normal">普通</option>
+                                    <option value="bold" selected>粗体</option>
+                                    <option value="italic">斜体</option>
+                                    <option value="bold italic">粗斜体</option>
+                                </select>
+                            </div>
+                            <div class="setting-item">
+                                <label for="maxLength">最大长度：</label>
+                                <input type="number" id="maxLength" value="7" min="1" max="20" onchange="updateTextPreview()">
+                                <span class="setting-hint">字符</span>
+                            </div>
+                            <div class="setting-item">
+                                <label for="textWrap">文字换行：</label>
+                                <select id="textWrap" onchange="updateTextPreview()">
+                                    <option value="false">不换行</option>
+                                    <option value="true">自动换行</option>
+                                </select>
+                            </div>
+                            <div class="setting-item">
+                                <label for="textColor">文字颜色：</label>
+                                <input type="color" id="textColor" value="#ffffff" onchange="updateTextPreview()">
+                            </div>
+                        </div>
+                        
+                        <!-- 实时预览区域 -->
+                        <div class="preview-section">
+                            <h5>🔍 实时预览</h5>
+                            <div class="preview-container">
+                                <canvas id="textPreviewCanvas" width="120" height="120"></canvas>
+                                <div class="preview-info">
+                                    <p class="preview-text" id="previewText">MYAPP</p>
+                                    <p class="preview-details" id="previewDetails">字体: Arial, 大小: 100px, 样式: bold</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="ai-modal-actions">
